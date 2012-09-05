@@ -1,0 +1,10 @@
+.panel-image
+.info{ 'data-id' => @track.id }
+  .title
+    %input(type="text")
+    %button guess
+  .tags
+    - @track.tags.each do |tag|
+      .tag= tag.name
+  .audio
+    %audio{ src: @track.file }

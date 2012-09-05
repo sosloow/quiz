@@ -1,0 +1,51 @@
+body{
+	font: 24pt "helvetica" "arial" "sans-serif";
+}
+
+.container{
+	width: 98%;
+	margin: 0 auto;
+	text-align: center;
+}
+
+.card{
+	display: inline-block;
+  width: 150px;
+	height: 150px;
+	float: left;
+	margin: 2px;
+	border: solid 1px;
+}
+
+
+.panel {
+  position: fixed;
+	bottom: -170px;
+	overflow: hidden;
+	width: 350px;
+	height: 200px;
+	color: #fff;
+	font-size: 20px;
+	text-align: center;
+}
+
+.open-panel, .close-panel {
+	position: relative;
+	top: 0;
+	left: 30px;
+	background: #345;
+	color: #fff;
+	width: 100px;
+	text-align: center;
+}
+.panel-image{
+	float:left;
+	width: 150px;
+	height: 150px;
+}
+​.info {}
+.panel-content {
+	width: 350px;
+	background: #ccc;
+	height: 200px;
+}

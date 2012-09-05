@@ -1,0 +1,22 @@
+%form{ method: 'post', enctype: 'multipart/form-data' }
+  %table.table
+    %tr
+      %td Title
+      %td
+        %input{ type: 'text', name: 'title' }
+    %tr
+      %td Cover
+      %td
+        %input{ type: 'file', name: 'cover' }
+    %tr
+      %td Track
+      %td
+        %input{ type: 'file', name: 'track' }        
+    %tr
+      %td Tags
+      %td
+        %input{ type: 'text', name: 'tags' }
+    %tr
+      %td
+      %td
+        %input{ type: 'submit', value: 'submit' }  

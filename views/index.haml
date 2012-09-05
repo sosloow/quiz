@@ -1,0 +1,10 @@
+%a{ href: '/tracks/new/' } create track
+- @tracks.each do |track|
+  %div{ id: "track-#{track.id}" }
+    %p= track.title
+    %audio{ src: track.file }
+    %input.title{ type: 'text', value: 'blah' }
+    %a{ href: "/tracks/#{track.id}/" } show 
+    %a{ href: "/tracks/#{track.id}/edit/" } edit
+    %button.guess name it!
+%a{ href: '/play/' } play a game  

@@ -1,0 +1,6 @@
+.track
+  %h3= @track.title
+  %p= @track.tags_string
+%form{ method: 'post' }
+  %input{ type: 'hidden', name: '_method', value: 'delete' }
+  %button{ type: 'submit' } Delete track

@@ -1,0 +1,15 @@
+%form{ method: 'post' }
+  %table.table
+    %tr
+      %td Title    
+      %td
+        %input{ type: 'text', name: 'title', value: @track.title }
+    %tr
+      %td Tags
+      %td
+        %input{ type: 'text', name: 'tags', value: @track.tags_string }
+    %tr
+      %td 
+      %td      
+        %input{ type: 'submit', value: 'submit' }
+ 
