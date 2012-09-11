@@ -1,22 +1,39 @@
 require 'data_mapper'
 require 'dm-paperclip'
 
+Paperclip.configure do |config|
+  config.use_dm_validations = true
+end
+
 class Track
   include DataMapper::Resource
   include Paperclip::Resource
 
   property :id, Serial
   property :title, String, required: true
-  property :file, String, required: true, length: 15..100
   property :difficulty, String
   property :played, Integer, default: 0
   property :guessed, Integer, default: 0
   property :reported, Boolean, default: false
+  property :created_at, DateTime
 
-  has_attached_file :cover, storage: 's3', s3_credentials: "#{File.dirname(__FILE__)}/config/s3.yml"
-  has_attached_file :track, storage: 's3', s3_credentials: "#{File.dirname(__FILE__)}/config/s3.yml"
+  has_attached_file(:cover, storage: 's3',
+                    s3_credentials: "#{File.dirname(__FILE__)}/config/s3.yml",
+                    path: ":class/:id/:style.:extension",
+                    styles: {small: '300x300>' })
+  has_attached_file(:track, storage: 's3',
+                    s3_credentials: "#{File.dirname(__FILE__)}/config/s3.yml",
+                    path: ":class/:id/:style.:extension")
 
-  has n, :tags, through: Resource
+  # validates_attachment_presence :track, :cover
+  # validates_attachment_content_type :cover, content_type: ["image/jpeg", "image/png", "image/jpg", "image/gif"]
+  # validates_attachment_size :cover, in: 1..500000
+  # validates_attachment_content_type :track, content_type: ["audio/mp3", 'audio/mpeg']
+  # validates_attachment_size :track, in: 1..4000000
+  # validates_attachment_thumbnails :cover
+
+  has n, :tags, through: Resource, constraint: :skip
+  has n, :users, through: Resource, constraint: :skip
 
   def guess? title
     result = !title.match(/#{self.title}/i).nil?
@@ -51,6 +68,7 @@ class Track
 
 end
 
+
 class Tag
   include DataMapper::Resource
 
@@ -58,5 +76,51 @@ class Tag
   property :name, String
   property :type, String
 
-  has n, :tracks, through: Resource
+  has n, :tracks, through: Resource, constraint: :skip
+end
+
+
+class User
+  include DataMapper::Resource
+
+  property :id, Serial
+  property :login, String, required: true, unique: true
+  property :email, String, required: true, unique: true, format: :email_address
+  property :hashed_password, String, length: 256
+  property :salt, String
+  property :created_at, DateTime
+
+  attr_accessor :password, :password_confirmation
+
+  validates_presence_of     :password_confirmation
+  validates_presence_of     :password
+  validates_length_of       :password, min: 6
+  validates_confirmation_of :password
+
+  has n, :tracks, through: Resource, constraint: :skip
+
+  before :save do
+    if self.salt.nil?
+      self.salt = Array.new(5){ rand(10) }.join
+      self.hashed_password = Digest::SHA256.new << (self.password + self.salt)
+    end
+  end
+
+  def guessed(new_track)
+    unless self.tracks.include?(new_track)
+      self.tracks << new_track
+      self.save
+    end
+  end
+
+  class << self
+
+    def authenticate(login, password)
+      user = User.first(login: login)
+      return nil if user.nil?
+      return user.id if (Digest::SHA256.new << (password + user.salt)) == user.hashed_password
+    end
+  
+  end
+
 end

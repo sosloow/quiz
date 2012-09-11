@@ -43,7 +43,12 @@ body{
 	width: 150px;
 	height: 150px;
 }
-​.info {}
+
+.panel-image > img{
+	max-width: 150px;
+}
+
+.info {}
 .panel-content {
 	width: 350px;
 	background: #ccc;

@@ -1,5 +1,5 @@
-audiojs.events.ready ->
-  as = audiojs.createAll()
+AudioPlayer.setup '/audio-player/player.swf'
+  width: 200
 
 loadCards = (num) ->
   $.ajax
@@ -8,7 +8,7 @@ loadCards = (num) ->
     data: 'num=' + num
     success: (cards) ->
       $('.deck').append(cards)
-    
+      
 
 loadTrackPanel = (id) ->
   $.ajax
@@ -17,7 +17,7 @@ loadTrackPanel = (id) ->
     data: 'id=' + id
     success: (trackPanel) ->
       $('.panel-content').html(trackPanel)
-      as = audiojs.createAll()
+      #as = audiojs.createAll()
 
 closePanel = ->
   $('.panel').animate
@@ -30,20 +30,24 @@ openPanel = ->
     bottom: '0'
     'slow'
     -> $('.open-panel').attr('class', 'close-panel')
+
             
 $ ->
 
   loadCards(70)
   
-  $('.guess').click ->
-    track = $(this).parent()
-    $.get(
+  $('.guess').live 'click', ->
+    track = $('.info')
+    $.post(
       '/ajax/match/'
-      title: track.children('.title').val()
+      title: $('.input-title').val()
       id: track.data('id')
       (data) ->
         if data == 'true'
           track.css('background', 'green')
+          card = $(".card[data-id=#{track.data('id')}]")
+          coverLink = $('.panel-image > img').attr('src')
+          card.html("<img src=\"#{coverLink}\"/>")
         else
           track.css('background', 'red')
     )
@@ -58,7 +62,9 @@ $ ->
           'slow'
           =>
             $('.close-panel').attr('class', 'open-panel')
-            loadTrackPanel $(this).data('id')
+            loadTrackPanel $(this).data('id')  
+      openPanel()
+    else if $('.close-panel').length == 0
       openPanel()
 
   $('.open-panel').live 'click', -> openPanel()

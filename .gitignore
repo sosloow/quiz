@@ -1,5 +1,6 @@
 *~
 *.db
 *#*
-public/tracks/*
+public/js/*
+public/audio-player/*
 config/*
