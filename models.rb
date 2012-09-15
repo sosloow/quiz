@@ -113,6 +113,14 @@ class User
     end
   end
 
+  def guessed_many tracks_ids
+    unless tracks_ids.nil?
+      tracks_ids.each do |track_id|
+        self.guessed Track.get(track_id)
+      end
+    end  
+  end
+
   class << self
 
     def authenticate(login, password)

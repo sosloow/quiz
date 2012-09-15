@@ -9,6 +9,10 @@ task :default do
   Rake.application.display_tasks_and_comments
 end
 
+task :test do
+  ruby './tests.rb'
+end
+
 namespace :db do
 
   desc 'run all migrations'

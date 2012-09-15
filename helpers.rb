@@ -29,9 +29,13 @@ module Sinatra::Helpers
   def admin?
     session[:admin]
   end
+
+  def login?
+    session[:user]
+  end
   
   def protected!
-    unless admin? || session[:user]
+    unless admin? || login?
       session[:flash] = 'access denied!'
       redirect '/'
     end
@@ -55,4 +59,10 @@ module Sinatra::Helpers
     true if checkbox_value == 'on'
   end
 
+end
+
+module TestHelpers
+  def session 
+    last_response.env['rack.session']
+  end
 end
