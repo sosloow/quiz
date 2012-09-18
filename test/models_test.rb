@@ -1,7 +1,6 @@
 require 'minitest/autorun'
 require 'rack/test'
-require './app'
-
+require "#{Dir.pwd}/app/models"
 
 DataMapper.setup(:default, "sqlite::memory:")
 
@@ -36,6 +35,11 @@ class TestModels < MiniTest::Unit::TestCase
     assert Tag.first(name: 'la')
   end
 
+  def test_guess_should_be_false_on_mismatch
+    refute @track.guess?('ha-ha'), 'matched smth when shouldnt'
+    assert @track.guess?('la'), 'nil when should match'
+  end
+
   def test_tagging
     @track.has_tag @tag.name
     assert Track.get(@track.id).tags, 'track has not been linked'
@@ -44,7 +48,7 @@ class TestModels < MiniTest::Unit::TestCase
   end
 
   def test_authentication
-    assert_equal User.authenticate('la', 'lalala'), @player.id, 'auth failed'
+    assert_equal User.authenticate('la', 'lalala'), @player, 'auth failed'
   end
 
   def test_user_is_destroyed_properly
@@ -69,61 +73,11 @@ class TestModels < MiniTest::Unit::TestCase
   end
 
   def test_user_saves_answers_from_session
-    @player.guessed_many [@track.id]
+    @track1 = Track.new
+    @track1.title = 'la'
+    @track1.save
+    @player.guessed_many [@track.id, @track1.id]
     assert @player.tracks.any?, 'answers has not been saved'
   end
+
 end
-
-class TestControllers < MiniTest::Unit::TestCase
-
-  include Rack::Test::Methods
-
-  def app
-    App
-  end
-
-  def session 
-    last_request.env['rack.session']
-  end
-  
-  def setup
-    App.set :environment, :test
-    DataMapper.auto_migrate!
-    DataMapper.finalize
-    @player = User.new
-    @player.login = 'la'
-    @player.email = 'la@la.la'
-    @player.password = 'lalala'
-    @player.password_confirmation = 'lalala'
-    @player.save
-    @track = Track.new
-    @track.title = 'la'
-    @track.save
-    @tag = Tag.new
-    @tag.name = 'la'
-    @tag.save
-  end
-  
-  def test_ajax_match_should_save_to_session_if_not_logged_in
-    post '/ajax/match/', {id: @track.id.to_s, title: 'la'}
-    assert_equal 'true', last_response.body
-    assert_equal [1], session[:answered]
-  end
-
-  def test_ajax_match_should_save_to_db_if_logged_in
-    User.authenticate(@player.login, 'lalala')
-    post '/ajax/match/', {id: @track.id.to_s, title: 'la'}
-    assert_equal 'true', last_response.body
-    refute @player.tracks.nil?, 'link has not been saved'
-  end
-
-  def test_answered_session_should_be_transferred_to_db_on_reg
-    User.all.destroy
-    post '/ajax/match/', {id: @track.id.to_s, title: 'la'}
-    post '/register/', {email: 'la@la.la', login: 'lal', pwd: 'lalala', pwd2: 'lalala'}
-    assert User.first(login: 'lal'), 'user has not been created'
-    assert User.first.tracks.any?, 'links has not been saved'
-  end
-  
-end
-

@@ -1,3 +1,3 @@
 Pry.config.editor = "emacs"
 
-require './app.rb'
+require './app/app.rb'

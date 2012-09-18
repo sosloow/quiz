@@ -1,0 +1,13 @@
+.panel-image
+  %img{ src: @track.cover.url(:small) }
+.info{ 'data-id' => @track.id }
+  .title-form
+    %input.input-title{type: 'text', placeholder: 'Title'}
+    %button.btn.btn-success.guess GO!
+  .audio
+    #audioplayer{ preload: 'none' }    
+    %script AudioPlayer.embed("audioplayer", {soundFile: "#{@track.track.url}"});
+  .tags
+    - @track.tags.each do |tag|
+      .tag.btn.btn-primary= tag.name
+    %button.add-tag.btn.btn-success +

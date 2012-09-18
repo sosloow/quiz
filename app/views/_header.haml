@@ -1,0 +1,24 @@
+.navbar.navbar-fixed-top
+  .navbar-inner
+    .container-fluid
+      %button.btn.btn-navbar{'data-toggle' => 'collapse',
+                  'data-target' => '.nav-collapse',
+                    type: 'button' }
+        %span.icon-bar
+        %span.icon-bar
+        %span.icon-bar
+      %a.brand(href='/') zisis header
+      %ul.pull-left.nav
+        %li
+          %a(href='#') Cards
+        %li
+          %a(href='#') Players
+      %ul.pull-right.nav
+        - if login?
+          - user = User.get(login?)
+          %li
+            %a{href: "/user/#{user.login}/"}= user.login
+          %a.btn.btn-primary(href='/logout/') Log Out
+        - else          
+          %a.btn.btn-primary(href='/login/') Log In
+          %a.btn.btn-success(href='/register/') Sign Up

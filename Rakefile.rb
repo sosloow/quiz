@@ -1,5 +1,6 @@
 require 'data_mapper'
-require './models'
+require 'rake/testtask'
+require "#{File.dirname(__FILE__)}/app/models"
 
 task :default do
   puts "Available tasks:"
@@ -9,9 +10,13 @@ task :default do
   Rake.application.display_tasks_and_comments
 end
 
-task :test do
-  ruby './tests.rb'
+Rake::TestTask.new do |t|
+  ENV['RACK_ENV'] = 'test'
+  t.libs = ["app"]
+  t.test_files = FileList['test/*.rb']
+  t.verbose = true
 end
+
 
 namespace :db do
 

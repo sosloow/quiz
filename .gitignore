@@ -4,3 +4,5 @@
 public/js/*
 public/audio-player/*
 config/*
+tmp/*
+log/*

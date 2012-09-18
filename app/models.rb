@@ -18,11 +18,11 @@ class Track
   property :created_at, DateTime
 
   has_attached_file(:cover, storage: 's3',
-                    s3_credentials: "#{File.dirname(__FILE__)}/config/s3.yml",
+                    s3_credentials: "#{File.expand_path('config/s3.yml')}",
                     path: ":class/:id/:style.:extension",
                     styles: {small: '300x300>' })
   has_attached_file(:track, storage: 's3',
-                    s3_credentials: "#{File.dirname(__FILE__)}/config/s3.yml",
+                    s3_credentials: "#{File.expand_path('config/s3.yml')}",
                     path: ":class/:id/:style.:extension")
 
   # validates_attachment_presence :track, :cover
@@ -36,8 +36,7 @@ class Track
   has n, :users, through: Resource, constraint: :skip
 
   def guess? title
-    result = !title.match(/#{self.title}/i).nil?
-    result.to_s
+    !title.match(/#{self.title}/i).nil?
   end
   
   def has_tag(tag_name)
@@ -109,7 +108,7 @@ class User
   def guessed(new_track)
     unless self.tracks.include?(new_track)
       self.tracks << new_track
-      self.save
+      self.save!
     end
   end
 
@@ -126,7 +125,7 @@ class User
     def authenticate(login, password)
       user = User.first(login: login)
       return nil if user.nil?
-      return user.id if (Digest::SHA256.new << (password + user.salt)) == user.hashed_password
+      return user if (Digest::SHA256.new << (password + user.salt)) == user.hashed_password
     end
   
   end

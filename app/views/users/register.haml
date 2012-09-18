@@ -1,0 +1,14 @@
+.container
+  .row
+    .span4.offset4.well
+      %legend Sign Up
+      - if session[:flash]
+        .alert.alert-error
+          %button.close{'data-dismiss' => 'alert', type: 'button'} ×
+          %span.flash= session[:flash]
+      %form{ method: 'post', action: '/register/', 'accept-charset' => 'UTF-8' }  
+        %input.span4{ type: 'text', name: 'login', placeholder: 'Username' }  
+        %input.span4{ type: 'password', name: 'pwd', placeholder: 'Password' }
+        %input.span4{ type: 'password', name: 'pwd2', placeholder: 'Repeat password' }
+        %input.span4{ type: 'text', name: 'email', placeholder: 'e-mail' }
+        %input.btn.btn-primary.btn-block{ type: 'submit', value: 'submit' }

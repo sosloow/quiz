@@ -17,7 +17,6 @@ loadTrackPanel = (id) ->
     data: 'id=' + id
     success: (trackPanel) ->
       $('.panel-content').html(trackPanel)
-      #as = audiojs.createAll()
 
 closePanel = ->
   $('.panel').animate
@@ -31,26 +30,28 @@ openPanel = ->
     'slow'
     -> $('.open-panel').attr('class', 'close-panel')
 
-            
+
+matchTitle = (track) ->
+  unless data == 'false'
+    card = $(".card[data-id=#{$('.info').data('id')}]")
+    cardContent = card.children[0].children[0]
+    cardContent.text()
+  else
+    $('.panel-content').css('border-color', 'red')  
+
 $ ->
 
   loadCards(70)
   
   $('.guess').live 'click', ->
     track = $('.info')
-    $.post(
-      '/ajax/match/'
-      title: $('.input-title').val()
-      id: track.data('id')
-      (data) ->
-        if data == 'true'
-          track.css('background', 'green')
-          card = $(".card[data-id=#{track.data('id')}]")
-          coverLink = $('.panel-image > img').attr('src')
-          card.html("<img src=\"#{coverLink}\"/>")
-        else
-          track.css('background', 'red')
-    )
+    $.ajax
+      type: 'post'
+      url: '/ajax/match/'
+      data:
+        title: $('.input-title').val()
+        id: track.data('id')
+      success: matchTitle(data)
 
   $('.card').live 'click', ->
     unless $(this).data('id') == $('.info').data('id')

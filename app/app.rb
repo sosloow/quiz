@@ -1,7 +1,9 @@
 require 'sinatra/base'
 require 'haml'
+require 'json'
 require 'coffee-script'
-require './models'
+require "#{File.dirname(__FILE__)}/models"
+require "#{File.dirname(__FILE__)}/helpers"
 
 
 class App < Sinatra::Base
@@ -9,22 +11,20 @@ class App < Sinatra::Base
   helpers Sinatra::Helpers
   use Rack::MethodOverride
   enable :sessions
-  disable :show_exceptions
-  set :protection, :except => :remote_token 
+  set :protection, :except => :remote_token
   set :haml, {:format => :html5 }
 
-  def login?
-    # session[:user]
+  configure :development do
+    DataMapper::Logger.new($stdout, :debug)
   end
-  
-#  DataMapper::Logger.new($stdout, :debug) unless test?
+
+  configure :test do
+    disable :show_exceptions
+  end
+
   DataMapper.setup(:default, "sqlite://#{Dir.pwd}/db/dev.db")
   DataMapper.finalize
 
-
-  get '/' do
-    redirect '/play/'
-  end
 
   get '/register/' do
     haml :'users/register'
@@ -34,7 +34,7 @@ class App < Sinatra::Base
     user = User.create email: params[:email], login: params[:login]
     user.password = params[:pwd]
     user.password_confirmation = params[:pwd2]
-    
+
     if user.save
       session[:user] = user.id
       user.guessed_many session[:answered]
@@ -55,7 +55,9 @@ class App < Sinatra::Base
   end
 
   post '/login/' do
-    if session[:user] = User.authenticate(params[:login], params[:pwd])
+    if user = User.authenticate(params[:login], params[:pwd])
+      user.guessed_many session[:answered]
+      session[:user] = user.id
       session[:flash] = "Login successful"
       redirect '/'
     else
@@ -77,7 +79,7 @@ class App < Sinatra::Base
     track.has_many_tags params[:tags]
     track.created_at = Time.now
     puts track.errors.inspect unless track.save
-    
+
     redirect '/'
   end
 
@@ -108,7 +110,7 @@ class App < Sinatra::Base
     redirect '/'
   end
 
-  get '/play/' do
+  get '/' do
     @tracks = Track.all
     haml :play
   end
@@ -123,7 +125,10 @@ class App < Sinatra::Base
         session[:answered] ||= []
         session[:answered] << track_id
       end
-      'true'
+      urls = {audio: track.track.url,
+        cover_small: track.cover.url(:small),
+        cover_original: track.cover.url(:original)}
+      {urls: urls, track: JSON.parse(track.to_json)}.to_json
     else
       'false'
     end
@@ -145,10 +150,6 @@ class App < Sinatra::Base
 
   get %r{(.*[^\/]$)} do
     redirect "#{params[:captures].first}/"
-  end
-
-  get '/' do
-    redirect
   end
 
   run! if app_file == $0

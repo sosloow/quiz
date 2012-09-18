@@ -1,29 +1,43 @@
-body{
-	font: 24pt "helvetica" "arial" "sans-serif";
-}
-
-.container{
-	width: 98%;
-	margin: 0 auto;
-	text-align: center;
+.center {
+  padding-top: 70px;
 }
 
 .card{
-	display: inline-block;
-  width: 150px;
-	height: 150px;
-	float: left;
-	margin: 2px;
-	border: solid 1px;
+	height:150px;
+	width:150px;
+	display:inline-block;
+	text-align:center;
+}
+.thumbnail:hover{
+	border-color: rgba(82, 168, 236, 0.8);
+	outline: 0;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
 }
 
+.card-content{
+	font-size: 100px;
+	font-weight: bold;
+	line-height: 130px;
+	height:130px;
+}
+
+.deck{
+	width: 95%;
+	margin: 0 auto;
+	text-align:justify;
+	text-align-last: justify;
+}
 
 .panel {
+	z-index: 5;
   position: fixed;
 	bottom: -170px;
 	overflow: hidden;
-	width: 350px;
-	height: 200px;
+	width: 55%;
+	min-width: 470px;
+	max-width:600px;
 	color: #fff;
 	font-size: 20px;
 	text-align: center;
@@ -33,24 +47,72 @@ body{
 	position: relative;
 	top: 0;
 	left: 30px;
-	background: #345;
-	color: #fff;
+	background: #eee;
+	color: #;
 	width: 100px;
+	height: 20px;
 	text-align: center;
+	border-radius: 5px 5px 0 0;
 }
+
+.panel-no-image{
+	float:left;
+	max-width: 200px;
+	width: 45%;
+	margin: 5px;
+	font-size: 100px;
+	font-weight: bold;
+	line-height: 130px;
+}
+
 .panel-image{
 	float:left;
-	width: 150px;
-	height: 150px;
+	max-width: 200px;
+	width: 45%;
+	margin: 5px;
 }
 
 .panel-image > img{
-	max-width: 150px;
 }
 
-.info {}
+button.guess{
+	margin-top: -8px;
+}
+
+input.input-title{
+	max-width: 60%;
+}
+
+.info {
+	max-width:200px;
+  float:left;
+	padding-left:10px;
+  //width: 20%;
+}
+
 .panel-content {
-	width: 350px;
-	background: #ccc;
-	height: 200px;
+	border: 10px solid #eee;
+	width: 86%;
+	background: #fff;
+	border-radius: 5px 5px 0 0;
+	padding: 2%;
+	overflow: hidden;
+}
+
+.tags{
+	text-align:left;
+	margin: 5px;
+	font-weight: bold;
+}
+
+.tag{ 
+	display: inline-block;
+}
+
+button.add-tag.btn.btn-success{
+
+}
+
+.audio{
+  margin: 20px auto;
 }
