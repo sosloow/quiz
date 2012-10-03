@@ -1,0 +1,13 @@
+.container
+  .well
+    %legend Users
+    - @users.each do |user|
+      .row
+        .span2= user.login
+        .span2= user.email
+  .well
+    %legend Tracks  
+    - @tracks.each do |track|
+      .row
+        .span2= track.id
+        .span2= track.title

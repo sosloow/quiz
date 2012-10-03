@@ -36,7 +36,7 @@ namespace :db do
 
   desc 'seed DB'
   task :seed do
-    ruby 'db/seeds.rb'
+    ruby "#{Dir.pwd}/db/seeds.rb"
   end
 
 end

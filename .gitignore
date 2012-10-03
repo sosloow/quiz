@@ -1,8 +1,8 @@
 *~
 *.db
 *#*
-public/js/*
-public/audio-player/*
+app/public/js/*
+app/public/audio-player/*
 config/*
 tmp/*
 log/*

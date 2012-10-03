@@ -1,12 +1,9 @@
 require 'minitest/autorun'
-require 'rack/test'
 require "#{Dir.pwd}/app/models"
 
 DataMapper.setup(:default, "sqlite::memory:")
 
 class TestModels < MiniTest::Unit::TestCase
-
-  include Rack::Test::Methods
 
   def setup
     DataMapper.auto_migrate!
@@ -14,8 +11,8 @@ class TestModels < MiniTest::Unit::TestCase
     @player = User.new
     @player.login = 'la'
     @player.email = 'la@la.la'
-    @player.password = 'lalala'
-    @player.password_confirmation = 'lalala'
+    @player.salt = '123'
+    @player.hashed_password = Digest::SHA256.new << ('lalala' + @player.salt)
     @player.save
     @track = Track.new
     @track.title = 'la'
@@ -42,6 +39,7 @@ class TestModels < MiniTest::Unit::TestCase
 
   def test_tagging
     @track.has_tag @tag.name
+    @track.save
     assert Track.get(@track.id).tags, 'track has not been linked'
     assert_equal Track.get(@track.id).tags.first.name, 'la'
     assert Tag.get(@tag.id).tracks.any?, 'tag has not been linked'
@@ -78,6 +76,11 @@ class TestModels < MiniTest::Unit::TestCase
     @track1.save
     @player.guessed_many [@track.id, @track1.id]
     assert @player.tracks.any?, 'answers has not been saved'
+  end
+
+  def test_user_can_be_registered
+    User.register(login: 'blah', pwd: 'blahla', pwd2: 'blahla', email: 'blah@blah.com')
+    assert User.all.any?, 'user has not been created'
   end
 
 end

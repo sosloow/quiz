@@ -1,9 +1,15 @@
-.panel-image
-  %img{ src: @track.cover.url(:small) }
-.info{ 'data-id' => @track.id }
-  .title-form
-    %input.input-title{type: 'text', placeholder: 'Title'}
-    %button.btn.btn-success.guess GO!
+- if @track.collected? session[:user], session[:answered]
+  .panel-image
+    %img{ src: @track.cover.url(:small) }
+- else
+  .panel-no-image ?
+.info{ 'data-id' => @track.id}
+  - if @track.collected? session[:user], session[:answered]
+    .title= @track.title
+  - else  
+    .title-form
+      %input.input-title{type: 'text', placeholder: 'Title'}
+      %button.btn.btn-success.guess GO!
   .audio
     #audioplayer{ preload: 'none' }    
     %script AudioPlayer.embed("audioplayer", {soundFile: "#{@track.track.url}"});

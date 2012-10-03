@@ -3,7 +3,7 @@ AudioPlayer.setup '/audio-player/player.swf'
 
 loadCards = (num) ->
   $.ajax
-    type: 'post'
+    type: 'get'
     url: '/ajax/loadcards/'
     data: 'num=' + num
     success: (cards) ->
@@ -12,7 +12,7 @@ loadCards = (num) ->
 
 loadTrackPanel = (id) ->
   $.ajax
-    type: 'post'
+    type: 'get'
     url: '/ajax/loadtrack/'
     data: 'id=' + id
     success: (trackPanel) ->
@@ -31,27 +31,34 @@ openPanel = ->
     -> $('.open-panel').attr('class', 'close-panel')
 
 
-matchTitle = (track) ->
-  unless data == 'false'
-    card = $(".card[data-id=#{$('.info').data('id')}]")
-    cardContent = card.children[0].children[0]
-    cardContent.text()
-  else
-    $('.panel-content').css('border-color', 'red')  
+matchTitle = ->
+  track = $('.info')
+  $.ajax
+    type: 'post'
+    url: '/ajax/match/'
+    data:
+      title: $('.input-title').val()
+      id: track.data('id')
+    dataType: 'json'
+    success: (data) ->
+      card = $(".card[data-id=#{$('.info').data('id')}]")
+      thumb = card.children()
+      if data.urls
+        img = $('<img/>').attr('src', data.urls.cover_small)
+        div = $('<div></div>').addClass('card-img')
+        div.html(img)
+        thumb.html(div)
+        thumb.removeClass().addClass('thumbnail card-content')
+      else
+        thumb.text('?!')
+      closePanel()
 
 $ ->
 
   loadCards(70)
   
   $('.guess').live 'click', ->
-    track = $('.info')
-    $.ajax
-      type: 'post'
-      url: '/ajax/match/'
-      data:
-        title: $('.input-title').val()
-        id: track.data('id')
-      success: matchTitle(data)
+    matchTitle()
 
   $('.card').live 'click', ->
     unless $(this).data('id') == $('.info').data('id')

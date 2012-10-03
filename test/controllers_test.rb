@@ -23,8 +23,8 @@ class TestControllers < MiniTest::Unit::TestCase
     @player = User.new
     @player.login = 'la'
     @player.email = 'la@la.la'
-    @player.password = 'lalala'
-    @player.password_confirmation = 'lalala'
+    @player.salt = '123'
+    @player.hashed_password = Digest::SHA256.new << ('lalala' + @player.salt)
     @player.save
     @track = Track.new
     @track.title = 'la'
@@ -47,13 +47,19 @@ class TestControllers < MiniTest::Unit::TestCase
   
   def test_ajax_match_should_save_to_session_if_not_logged_in
     post '/ajax/match/', {id: @track.id.to_s, title: 'la'}
+    assert @player.tracks.empty?, 'link has not been saved'
     assert_equal [1], session[:answered]
   end
 
+  def test_login_should_log_in
+    post '/login/', {login: @player.login, pwd: 'lalala'}
+    assert_equal @player.id, session[:user]
+  end
+
   def test_ajax_match_should_save_to_db_if_logged_in
-    User.authenticate(@player.login, 'lalala')
+    post '/login/', {login: @player.login, pwd: 'lalala'}
     post '/ajax/match/', {id: @track.id.to_s, title: 'la'}
-    refute @player.tracks.nil?, 'link has not been saved'
+    assert @player.tracks.any?, 'link has not been saved'
   end
 
   def test_answered_session_should_be_transferred_to_db_on_reg
@@ -72,8 +78,23 @@ class TestControllers < MiniTest::Unit::TestCase
   end
 
   def test_ajax_loadcards_should_be_ok
-    post 'ajax/loadcards/'
+    get 'ajax/loadcards/'
     assert last_response.ok?, 'smth is not ok: #{last_response.status}'
+  end
+
+  def test_track_collected_should_be_true_if_its_in_session
+    get '/'
+    refute @track.collected?(session[:user], session[:answered]), 'track was collected when shouldnt'
+    session[:answered] ||= [1]
+    assert @track.collected?(session[:user], session[:answered]), 'track has not been collected as should'
+  end
+
+  def test_track_collected_should_be_true_if_its_in_users_tracks
+    get '/'
+    refute @track.collected?(session[:user], session[:answered]), 'track was collected when shouldnt'
+    @player.guessed @track
+    session[:user] = 1
+    assert @track.collected?(session[:user], session[:answered]), 'track has not been collected as should'
   end
   
 end

@@ -18,7 +18,7 @@
           - user = User.get(login?)
           %li
             %a{href: "/user/#{user.login}/"}= user.login
-          %a.btn.btn-primary(href='/logout/') Log Out
+          %a.btn.btn-primary.btn-bold(href='/logout/') Log Out
         - else          
-          %a.btn.btn-primary(href='/login/') Log In
-          %a.btn.btn-success(href='/register/') Sign Up
+          %a.btn.btn-primary.btn-bold(href='/login/') Log In
+          %a.btn.btn-success.btn-bold(href='/register/') Sign Up

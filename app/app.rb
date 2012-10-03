@@ -10,8 +10,8 @@ class App < Sinatra::Base
 
   helpers Sinatra::Helpers
   use Rack::MethodOverride
-  enable :sessions
-  set :protection, :except => :remote_token
+  use Rack::Session::Pool, expire_after: 2592000
+  set :protection, except: :remote_token
   set :haml, {:format => :html5 }
 
   configure :development do
@@ -25,17 +25,28 @@ class App < Sinatra::Base
   DataMapper.setup(:default, "sqlite://#{Dir.pwd}/db/dev.db")
   DataMapper.finalize
 
+  before '/admin/*' do
+    admin_protected!
+  end
+
+  before %r{/tracks/(.+/edit|new)/} do
+    protected!
+  end
+  
+  get '/admin/' do
+    @users = User.all
+    @tracks = Track.all
+    haml :admin
+  end
 
   get '/register/' do
     haml :'users/register'
   end
 
   post '/register/' do
-    user = User.create email: params[:email], login: params[:login]
-    user.password = params[:pwd]
-    user.password_confirmation = params[:pwd2]
-
-    if user.save
+    user = User.register(email: params[:email], login: params[:login],
+                         pwd: params[:pwd], pwd2: params[:pwd2])
+    if user
       session[:user] = user.id
       user.guessed_many session[:answered]
       redirect '/'
@@ -57,6 +68,7 @@ class App < Sinatra::Base
   post '/login/' do
     if user = User.authenticate(params[:login], params[:pwd])
       user.guessed_many session[:answered]
+      session[:admin] = true if user.admin
       session[:user] = user.id
       session[:flash] = "Login successful"
       redirect '/'
@@ -72,18 +84,24 @@ class App < Sinatra::Base
   end
 
   post '/tracks/new/' do
+    audio_hash = params[:track]
     track = Track.new
     track.title = params[:title]
     track.cover = params[:cover]
-    track.track = params[:track]
     track.has_many_tags params[:tags]
     track.created_at = Time.now
-    puts track.errors.inspect unless track.save
+    
+    tmp_folder(audio_hash[:filename]) do |path|
+      track.track = replace_long_audio audio_hash, path
+      flash_errors track unless track.save
+      audio_hash[:tempfile].close
+    end    
 
     redirect '/'
   end
 
   get '/tracks/' do
+    @tracks = Track.all
     haml :'tracks/index'
   end
 
@@ -106,6 +124,7 @@ class App < Sinatra::Base
   end
 
   delete '/tracks/:id/' do |id|
+    admin_protected!
     track = Track.get(id).destroy
     redirect '/'
   end
@@ -122,7 +141,6 @@ class App < Sinatra::Base
       if login?
         User.get(session[:user]).guessed track
       else
-        session[:answered] ||= []
         session[:answered] << track_id
       end
       urls = {audio: track.track.url,
@@ -134,12 +152,17 @@ class App < Sinatra::Base
     end
   end
 
-  post '/ajax/loadcards/' do
+  before '/ajax/*' do
+    session[:answered] ||= []
+  end
+
+  get '/ajax/loadcards/' do
     @cards = Track.all.shuffle
     haml :cards, layout: false
   end
 
-  post '/ajax/loadtrack/' do
+  get '/ajax/loadtrack/' do
+      
     @track = Track.get params[:id]
     haml :track_panel, layout: false
   end

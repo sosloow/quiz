@@ -1,9 +1,14 @@
 %ul.thumbnails  
   - @cards.each do |card|
     .card{ 'data-id' => card.id }
-      .thumbnail.btn.guessed{class: %w|btn-primary btn-info btn-success btn-warning btn-danger|.shuffle[0]}
-        .card-content ?
+      - if card.collected? session[:user], session[:answered]
+        .thumbnail.card-content
+          .card-img
+            %img{ src: card.cover.url(:small) }
+      - else            
+        .thumbnail.btn.card-content{class: %w|btn-primary btn-info btn-success btn-warning btn-danger|.shuffle[0]}  
+          ?    
   - 50.times do |card|
     .card{ 'data-id' => card }
-      .thumbnail.btn{class: %w|btn-primary btn-info btn-success btn-warning btn-danger|.shuffle[0]}
-        .card-content ?
+      .thumbnail.btn.card-content{class: %w|btn-primary btn-info btn-success btn-warning btn-danger|.shuffle[0]}
+        ?

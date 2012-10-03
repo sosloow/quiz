@@ -1,5 +1,6 @@
 require 'data_mapper'
 require 'dm-paperclip'
+require 'digest'
 
 Paperclip.configure do |config|
   config.use_dm_validations = true
@@ -42,7 +43,6 @@ class Track
   def has_tag(tag_name)
     unless self.tags.include?(Tag.first(name: tag_name))
       self.tags << Tag.first_or_create(name: tag_name)
-      self.save
     end
     
   end
@@ -63,6 +63,14 @@ class Track
 
   def tags_string
     self.tags.map{ |tag| tag.name }.join(' ')
+  end
+
+  def collected?(bowser_id, session_answered=[])
+    session_answered ||= []
+    bowser_id ||= 0
+    users = TrackUser.all(track: self).map{ |tu| tu.user.id }
+    session_answered.include?(self.id) ||
+      users.include?(bowser_id)
   end
 
 end
@@ -88,22 +96,10 @@ class User
   property :hashed_password, String, length: 256
   property :salt, String
   property :created_at, DateTime
-
-  attr_accessor :password, :password_confirmation
-
-  validates_presence_of     :password_confirmation
-  validates_presence_of     :password
-  validates_length_of       :password, min: 6
-  validates_confirmation_of :password
+  property :admin, Boolean, default: false
 
   has n, :tracks, through: Resource, constraint: :skip
 
-  before :save do
-    if self.salt.nil?
-      self.salt = Array.new(5){ rand(10) }.join
-      self.hashed_password = Digest::SHA256.new << (self.password + self.salt)
-    end
-  end
 
   def guessed(new_track)
     unless self.tracks.include?(new_track)
@@ -119,6 +115,7 @@ class User
       end
     end  
   end
+  
 
   class << self
 
@@ -127,7 +124,19 @@ class User
       return nil if user.nil?
       return user if (Digest::SHA256.new << (password + user.salt)) == user.hashed_password
     end
-  
+
+    def register(*args)
+      args = args[0]
+      if args[:pwd] == args[:pwd2] && args[:pwd].size > 5
+        new_user = User.new
+        new_user.login = args[:login]
+        new_user.salt = Array.new(5){ rand(10) }.join
+        new_user.hashed_password = Digest::SHA256.new << (args[:pwd] + new_user.salt)
+        new_user.email = args[:email]
+        new_user.save
+        new_user
+      end
+    end
   end
 
 end
